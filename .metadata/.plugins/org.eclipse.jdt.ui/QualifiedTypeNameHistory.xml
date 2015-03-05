@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="android.location.LocationListener"/>
+<fullyQualifiedTypeName name="com.google.android.gms.location.LocationListener"/>
+<fullyQualifiedTypeName name="android.widget.RadioGroup"/>
+<fullyQualifiedTypeName name="android.widget.RadioGroup.OnCheckedChangeListener"/>
+<fullyQualifiedTypeName name="com.google.android.gms.maps.model.Marker"/>
+<fullyQualifiedTypeName name="com.google.android.gms.maps.GoogleMap.OnMapClickListener"/>
+<fullyQualifiedTypeName name="com.google.android.gms.maps.model.MarkerOptions"/>
+<fullyQualifiedTypeName name="android.net.ConnectivityManager"/>
+<fullyQualifiedTypeName name="android.net.NetworkInfo"/>
+<fullyQualifiedTypeName name="android.app.AlertDialog"/>
+<fullyQualifiedTypeName name="com.google.android.gms.maps.GoogleMap"/>
+<fullyQualifiedTypeName name="com.google.android.gms.maps.GoogleMap.OnMarkerClickListener"/>
+<fullyQualifiedTypeName name="android.view.View"/>
+<fullyQualifiedTypeName name="android.widget.EditText"/>
+<fullyQualifiedTypeName name="android.text.Editable"/>
+<fullyQualifiedTypeName name="android.content.Context"/>
+<fullyQualifiedTypeName name="android.content.DialogInterface.OnClickListener"/>
+<fullyQualifiedTypeName name="android.content.ContentUris"/>
+<fullyQualifiedTypeName name="android.database.SQLException"/>
+<fullyQualifiedTypeName name="android.content.ContentValues"/>
+<fullyQualifiedTypeName name="android.os.AsyncTask"/>
+</qualifiedTypeNameHistroy>

@@ -1,0 +1,85 @@
+package com.example.silentswitch;
+
+import android.content.ContentProvider;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.UriMatcher;
+import android.database.Cursor;
+import android.database.SQLException;
+import android.net.Uri;
+
+public class LocationsContentProvider extends ContentProvider{
+	
+	 public static final String PROVIDER_NAME = "com.example.silentswitch.SlientSwitchDB.locations";
+	 
+	  
+	    public static final Uri CONTENT_URI = Uri.parse("content://" + PROVIDER_NAME + "/locations" );
+	 
+	    
+	    private static final int LOCATIONS = 1;
+	 
+	    private static final UriMatcher uriMatcher ;
+	    
+	    static {
+	        uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+	        uriMatcher.addURI(PROVIDER_NAME, "locations", LOCATIONS);
+	    }
+	    
+	    LocationsDB newDB; 
+	    
+
+	@Override
+	public boolean onCreate() {
+		// TODO Auto-generated method stub
+		newDB = new LocationsDB(getContext());
+		return true;
+	}
+
+	@Override
+	public Cursor query(Uri uri, String[] projection, String selection,
+			String[] selectionArgs, String sortOrder) {
+		
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getType(Uri uri) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+    public Uri insert(Uri uri, ContentValues values) {
+        long rowID = newDB.insert(values);
+        Uri _uri=null;
+        if(rowID>0){
+            _uri = ContentUris.withAppendedId(CONTENT_URI, rowID);
+        }else {
+            try {
+                throw new SQLException("Insert For : " + uri + " Failed!!");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return _uri;
+    }
+	
+	
+
+	@Override
+	public int delete(Uri uri, String selection, String[] selectionArgs) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int update(Uri uri, ContentValues values, String selection,
+			String[] selectionArgs) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	
+
+}

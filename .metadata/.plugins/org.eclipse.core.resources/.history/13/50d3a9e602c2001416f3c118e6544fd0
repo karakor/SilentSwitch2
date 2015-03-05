@@ -1,0 +1,36 @@
+package com.example.silentswitch;
+
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabase.CursorFactory;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.database.Cursor;
+import android.content.Context; 
+
+
+public class LocationsDB extends SQLiteOpenHelper{
+	
+
+
+	//
+	private static int VERSION = 1; 
+	private static String DBNAME = "SlientSwitchDB";
+	
+	public static final String FIELD_LAT = "_id";
+	public static final String FIELD_LNG = "lng";
+	private static final String DATABASE_TABLE = "Locations";
+	
+
+	@Override
+	public void onCreate(SQLiteDatabase db) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+
+}

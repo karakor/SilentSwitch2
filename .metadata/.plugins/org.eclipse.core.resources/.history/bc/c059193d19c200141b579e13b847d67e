@@ -1,0 +1,421 @@
+package com.example.silentswitch;
+
+import android.app.AlertDialog;
+import android.app.Dialog;
+
+import android.app.LoaderManager.LoaderCallbacks;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.CursorLoader;
+import android.content.DialogInterface;
+import android.content.Loader;
+import android.database.Cursor;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.RadioGroup;
+import android.widget.RadioGroup.OnCheckedChangeListener;
+import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
+import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+public class Map_Screen extends ActionBarActivity implements LocationListener,
+		LoaderCallbacks<Cursor>{
+
+	private GoogleMap googleMap;
+	Boolean _isInternetPresent = false;
+	ConnectionDetector _cd;
+
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_map);
+
+		_cd = new ConnectionDetector(getApplicationContext());
+		_isInternetPresent = _cd.isConnectingToInternet();
+
+		connectionCheck();
+		mapClick();
+		markerClick();
+		 
+
+	}
+
+	// -----------------------------------------------------------------------------
+	// End of OnCreate... Methods
+
+	@SuppressWarnings("deprecation")
+	public void connectionCheck() {
+
+		if (_isInternetPresent) {
+			mapOptions();
+
+		} else {
+			mapOptions();
+			AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+			alertDialog.setTitle("WARNING");
+			alertDialog
+					.setMessage("Map Couldn't Load Please Check YOur Connection");
+			alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+				public void onClick(final DialogInterface dialog,
+						final int which) {
+					// TODO Add your code for the button here.
+				}
+			});
+			// Set the Icon for the Dialog
+
+			alertDialog.show();
+
+		}
+	}
+
+	public void mapOptions() {
+
+		// Getting Google Play availability status
+		int status = GooglePlayServicesUtil
+				.isGooglePlayServicesAvailable(getBaseContext());
+
+		// Showing status
+		if (status != ConnectionResult.SUCCESS) { // Google Play Services are
+													// not available
+
+			int requestCode = 10;
+			Dialog dialog = GooglePlayServicesUtil.getErrorDialog(status, this,
+					requestCode);
+			dialog.show();
+
+		} else { // Google Play Services are available
+
+			// Getting reference to the SupportMapFragment of activity_main.xml
+			SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager()
+					.findFragmentById(R.id.map);
+
+			// Getting GoogleMap object from the fragment
+			googleMap = fm.getMap();
+			googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+			// Enabling MyLocation Layer of Google Map
+			googleMap.setMyLocationEnabled(true);
+
+			// Getting LocationManager object from System Service
+			// LOCATION_SERVICE
+			LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+			// Creating a criteria object to retrieve provider
+			Criteria criteria = new Criteria();
+
+			// Getting the name of the best provider
+			String provider = locationManager.getBestProvider(criteria, true);
+
+			// Getting Current Location
+			Location location = locationManager.getLastKnownLocation(provider);
+			getLoaderManager().initLoader(0, null, this);
+
+			
+			if (location != null) {
+				onLocationChanged(location);
+
+			}
+			// display map in different types depending on choice of user
+			locationManager.requestLocationUpdates(provider, 20000, 0, this);
+			RadioGroup rgViews = (RadioGroup) findViewById(R.id.rg_views);
+
+			rgViews.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+				@Override
+				public void onCheckedChanged(RadioGroup group, int checkedId) {
+					// display Map on normal type
+					if (checkedId == R.id.rb_normal) {
+						googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+					}
+					// Display in satellite type to be able to identify
+					// buildings
+					else if (checkedId == R.id.rb_satellite) {
+						googleMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+					}
+					// Display map in terrain type
+					else if (checkedId == R.id.rb_terrain) {
+						googleMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+					}
+				}
+			});
+
+		}
+	}
+
+	public void setMarkers(LatLng lat) {
+
+		// Creating an instance of MarkerOptions
+		MarkerOptions markerOptions = new MarkerOptions();
+
+		// Setting latitude and longitude for the marker
+		markerOptions.position(lat);
+
+		// Adding marker on the Google Map
+		googleMap.addMarker(markerOptions);
+
+	}
+
+	public void mapClick() {
+
+		googleMap.setOnMapClickListener(new OnMapClickListener() {
+
+			@Override
+			public void onMapClick(final LatLng latlgn) {
+
+				googleMap.setOnMapClickListener(new OnMapClickListener() {
+
+					@Override
+					public void onMapClick(LatLng latlgn) {
+
+						// Drawing marker on the map
+						setMarkers(latlgn);
+
+						// Creating an instance of ContentValues
+						ContentValues contentValues = new ContentValues();
+
+						// Setting latitude in ContentValues
+						contentValues.put(LocationsDB.FIELD_LAT,
+								latlgn.latitude);
+
+						// Setting longitude in ContentValues
+						contentValues.put(LocationsDB.FIELD_LNG,
+								latlgn.longitude);
+
+						// Creating an instance of LocationInsertTask
+						markerAdd insertTask = new markerAdd();
+
+						// Storing the latitude, longitude and zoom level to
+						// SQLite database
+						insertTask.execute(contentValues);
+
+						Toast.makeText(getBaseContext(),
+								"Marker is added to the Map",
+								Toast.LENGTH_SHORT).show();
+					}
+				});
+
+			}
+
+		});
+	}
+
+	private class markerAdd extends AsyncTask<ContentValues, Void, Void> {
+
+		@Override
+		protected Void doInBackground(ContentValues... contentValues) {
+
+			/**
+			 * Setting up values to insert the clicked location into SQLite
+			 * database
+			 */
+			getContentResolver().insert(LocationsContentProvider.CONTENT_URI,
+					contentValues[0]);
+			return null;
+		}
+
+	}
+
+	public void markerClick() {
+		googleMap.setOnMarkerClickListener(new OnMarkerClickListener() {
+
+
+			@Override
+			public boolean onMarkerClick(final Marker marker) {
+				final Context context = Map_Screen.this;
+
+				AlertDialog.Builder alertBuild = new AlertDialog.Builder(
+						context);
+
+				alertBuild.setMessage("Please add a name for this location");
+
+				// Set an EditText view to get user input
+				final EditText inputName = new EditText(context);
+				alertBuild.setView(inputName);
+
+				alertBuild.setPositiveButton("Set Name",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+								String routeName = inputName.getText()
+										.toString();
+								marker.setTitle(routeName);
+							}
+
+						});
+				alertBuild.setNegativeButton("Cancel",
+						new DialogInterface.OnClickListener() {
+
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								// TODO Auto-generated method stub
+								dialog.dismiss();
+							}
+
+						});
+				alertBuild.setNegativeButton("Delete",
+						new DialogInterface.OnClickListener() {
+
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which ) {
+								// TODO Auto-generated method stub
+								marker.remove();
+								// Creating an instance of ContentValues
+								ContentValues contentValues = new ContentValues();
+								 
+								// Setting latitude in ContentValues
+								contentValues.remove(LocationsDB.FIELD_LNG );
+
+								// Setting longitude in ContentValues
+								contentValues.remove(LocationsDB.FIELD_LNG);
+
+							
+								
+
+							}
+
+						});
+
+				alertBuild.show();
+
+				return false;
+			}
+
+		});
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.map__screen, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle action bar item clicks here. The action bar will
+		// automatically handle clicks on the Home/Up button, so long
+		// as you specify a parent activity in AndroidManifest.xml.
+		int id = item.getItemId();
+		if (id == R.id.action_settings) {
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	public void onLocationChanged(Location location) {
+		// TODO Auto-generated method stub
+
+		// Getting latitude of the current location
+		double latitude = location.getLatitude();
+
+		// Getting longitude of the current location
+		double longitude = location.getLongitude();
+
+		// Creating a LatLng object for the current location
+		LatLng latLng = new LatLng(latitude, longitude);
+
+		// Showing the current location in Google Map
+		googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+
+		// Zoom in the Google Map
+		googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+
+	}
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onProviderEnabled(String provider) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onProviderDisabled(String provider) {
+
+	}
+
+	@Override
+	public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
+
+		// Uri to the content provider LocationsContentProvider
+		Uri uri = LocationsContentProvider.CONTENT_URI;
+
+		// Fetches all the rows from locations table
+		return new CursorLoader(this, uri, null, null, null, null);
+	}
+
+	@Override
+	public void onLoadFinished(Loader<Cursor> arg0, Cursor arg1) {
+
+		int locationCount = 0;
+		double lat = 0;
+		double lng = 0;
+		float zoom = 0;
+
+		// Number of locations available in the SQLite database table
+		locationCount = arg1.getCount();
+
+		// Move the current record pointer to the first row of the table
+		arg1.moveToFirst();
+
+		for (int i = 0; i < locationCount; i++) {
+
+			// Get the latitude
+			lat = arg1.getDouble(arg1.getColumnIndex(LocationsDB.FIELD_LAT));
+
+			// Get the longitude
+			lng = arg1.getDouble(arg1.getColumnIndex(LocationsDB.FIELD_LNG));
+
+			// Creating an instance of LatLng to plot the location in Google
+			// Maps
+			LatLng lats = new LatLng(lat, lng);
+
+			// Drawing the marker in the Google Maps
+			setMarkers(lats);
+
+			// Traverse the pointer to the next row
+			arg1.moveToNext();
+		}
+
+		if (locationCount > 0) {
+			// Moving CameraPosition to last clicked position
+			googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lat,
+					lng)));
+
+			// Setting the zoom level in the map on last position is clicked
+			googleMap.animateCamera(CameraUpdateFactory.zoomTo(zoom));
+		}
+	}
+
+	@Override
+	public void onLoaderReset(Loader<Cursor> loader) {
+		// TODO Auto-generated method stub
+
+	}
+
+}

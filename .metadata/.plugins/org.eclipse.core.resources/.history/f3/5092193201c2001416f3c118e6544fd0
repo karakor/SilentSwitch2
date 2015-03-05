@@ -1,0 +1,7 @@
+package com.example.silentswitch;
+
+import android.database.sqlite.SQLiteOpenHelper;
+
+public class LocationsDB extends SQLiteOpenHelper {
+
+}

@@ -1,0 +1,120 @@
+package com.example.silentswitch;
+
+import android.app.Dialog;
+import android.content.Intent;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
+
+
+public class MainActivity extends ActionBarActivity implements LocationListener{
+
+	private GoogleMap googleMap;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Button btnAlarm = (Button) findViewById(R.id.Alarm_btn);
+        Button btnMap = (Button) findViewById(R.id.Map_btn);
+        
+        
+        btnMap.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(getApplicationContext(), Map_Screen.class);
+				startActivity(intent);
+				 // Getting Google Play availability status
+		        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getBaseContext());
+		 
+		        // Showing status
+		        if(status!=ConnectionResult.SUCCESS){ // Google Play Services are not available
+		 
+		            int requestCode = 10;
+		            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(status, this, requestCode);
+		            dialog.show();
+		 
+		        }else { // Google Play Services are available
+		 
+		            // Getting reference to the SupportMapFragment of activity_main.xml
+		            SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+		 
+		            // Getting GoogleMap object from the fragment
+		            googleMap = fm.getMap();
+		 
+		            // Enabling MyLocation Layer of Google Map
+		            googleMap.setMyLocationEnabled(true);
+		 
+		            // Getting LocationManager object from System Service LOCATION_SERVICE
+		            LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+		 
+		            // Creating a criteria object to retrieve provider
+		            Criteria criteria = new Criteria();
+		 
+		            // Getting the name of the best provider
+		            String provider = locationManager.getBestProvider(criteria, true);
+		 
+		            // Getting Current Location
+		            Location location = locationManager.getLastKnownLocation(provider);
+		 
+		            if(location!=null){
+		                onLocationChanged(location);
+		            }
+		            locationManager.requestLocationUpdates(provider, 20000, 0, this);
+		        }
+			}
+        	
+        	
+        });
+        
+        
+        btnAlarm.setOnClickListener(new OnClickListener(){
+        
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				//Intent intent = new Intent(getApplicationContext(),AlarmScreen.class);
+				//startActivity(intent);
+				
+			}
+        	
+        
+        		
+        		
+    });
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+}

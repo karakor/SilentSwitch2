@@ -1,0 +1,5 @@
+INDEX VERSION 1.126+C:\Users\Kaan Karakor\Desktop\SlientSwitch\.metadata\.plugins\org.eclipse.jdt.core
+1213828265.index
+702292415.index
+2497541807.index
+3927141028.index
